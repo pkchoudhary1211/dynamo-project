@@ -1,0 +1,23 @@
+
+
+service: DynamoProject
+frameworkVersion: "2"
+provider:
+  name: aws
+  runtime: nodejs14.x
+  memorySize: 2048
+  lambdaHashingVersion: 20201221
+  stage: dev
+  timeout: 15
+  region: us-east-1 
+functions:
+  hello:
+    handler: handler.hello
+    events:
+      - http: ANY /{proxy+}
+      - http: ANY /
+    environment:
+      END_POINT: ${env:END_POINT}
+      REGION: ${env:REGION}
+      AWS_ACCESS_KEY_ENV: ${env:AWS_ACCESS_KEY_ENV}
+      SECRET_ACCESS_KEY: ${env:SECRET_ACCESS_KEY}

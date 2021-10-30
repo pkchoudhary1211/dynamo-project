@@ -19,12 +19,14 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 var cors = require('cors')
 app.use(cors())
+
+app.use('/', usersRouter);
 app.use('/users', usersRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
-});
+}); 
 
 // error handler
 app.use(function(err, req, res, next) {
