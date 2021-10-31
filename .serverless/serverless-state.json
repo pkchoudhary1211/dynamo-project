@@ -1,8 +1,8 @@
 {
   "service": {
-    "service": "DynamoProject",
+    "service": "my-test",
     "serviceObject": {
-      "name": "DynamoProject"
+      "name": "my-test"
     },
     "provider": {
       "name": "aws",
@@ -12,6 +12,30 @@
       "stage": "dev",
       "timeout": 15,
       "region": "us-east-1",
+      "iamRoleStatements": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "cloudwatch:*",
+            "cloudformation:*",
+            "ec2:*",
+            "events:*",
+            "iot:*",
+            "lambda:*",
+            "rds:*",
+            "route53:*",
+            "s3:*",
+            "sns:*",
+            "sqs:*",
+            "tag:*",
+            "es:*",
+            "xray:*",
+            "apigateway:*",
+            "elasticloadbalancing:*"
+          ],
+          "Resource": "*"
+        }
+      ],
       "versionFunctions": true,
       "compiledCloudFormationTemplate": {
         "AWSTemplateFormatVersion": "2010-09-09",
@@ -86,10 +110,10 @@
               }
             }
           },
-          "HelloLogGroup": {
+          "ApiLogGroup": {
             "Type": "AWS::Logs::LogGroup",
             "Properties": {
-              "LogGroupName": "/aws/lambda/DynamoProject-dev-hello"
+              "LogGroupName": "/aws/lambda/my-test-dev-api"
             }
           },
           "IamRoleLambdaExecution": {
@@ -117,7 +141,7 @@
                     "Fn::Join": [
                       "-",
                       [
-                        "DynamoProject",
+                        "my-test",
                         "dev",
                         "lambda"
                       ]
@@ -134,7 +158,7 @@
                         ],
                         "Resource": [
                           {
-                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/DynamoProject-dev*:*"
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/my-test-dev*:*"
                           }
                         ]
                       },
@@ -145,9 +169,12 @@
                         ],
                         "Resource": [
                           {
-                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/DynamoProject-dev*:*:*"
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/my-test-dev*:*:*"
                           }
                         ]
+                      },
+                      {
+                        "$ref": "$[\"service\"][\"provider\"][\"iamRoleStatements\"][0]"
                       }
                     ]
                   }
@@ -158,7 +185,7 @@
                 "Fn::Join": [
                   "-",
                   [
-                    "DynamoProject",
+                    "my-test",
                     "dev",
                     {
                       "Ref": "AWS::Region"
@@ -169,28 +196,20 @@
               }
             }
           },
-          "HelloLambdaFunction": {
+          "ApiLambdaFunction": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
               "Code": {
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/DynamoProject/dev/1635563499362-2021-10-30T03:11:39.362Z/DynamoProject.zip"
+                "S3Key": "serverless/my-test/dev/1635648471298-2021-10-31T02:47:51.298Z/my-test.zip"
               },
-              "Handler": "handler.hello",
+              "Handler": "handler.api",
               "Runtime": "nodejs14.x",
-              "FunctionName": "DynamoProject-dev-hello",
+              "FunctionName": "my-test-dev-api",
               "MemorySize": 2048,
               "Timeout": 15,
-              "Environment": {
-                "Variables": {
-                  "END_POINT": "http://dynamodb.us-east-1.amazonaws.com",
-                  "REGION": "us-east-1",
-                  "AWS_ACCESS_KEY_ENV": "AKIATEGZZ7VIFU7NH27A",
-                  "SECRET_ACCESS_KEY": "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"
-                }
-              },
               "Role": {
                 "Fn::GetAtt": [
                   "IamRoleLambdaExecution",
@@ -199,23 +218,23 @@
               }
             },
             "DependsOn": [
-              "HelloLogGroup"
+              "ApiLogGroup"
             ]
           },
-          "HelloLambdaVersionEZSO8IjOCNmPoMB2iXHJukmFTNZGBUmKoqlcJrxHrI": {
+          "ApiLambdaVersionNkMX6sO2GMl7Tz9N14mvGqWPX703qvu7fsnXqrtQ": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
-                "Ref": "HelloLambdaFunction"
+                "Ref": "ApiLambdaFunction"
               },
-              "CodeSha256": "l2FA45ajBgepm8PruAiDxqOqXmv/mvwsKrxR5/WrtEg="
+              "CodeSha256": "DF8qZX8d3k1wj1Vl9nLl5Ytafz6GuoZqupRPlWop7xE="
             }
           },
           "ApiGatewayRestApi": {
             "Type": "AWS::ApiGateway::RestApi",
             "Properties": {
-              "Name": "dev-DynamoProject",
+              "Name": "dev-my-test",
               "EndpointConfiguration": {
                 "Types": [
                   "EDGE"
@@ -270,7 +289,7 @@
                       ":lambda:path/2015-03-31/functions/",
                       {
                         "Fn::GetAtt": [
-                          "HelloLambdaFunction",
+                          "ApiLambdaFunction",
                           "Arn"
                         ]
                       },
@@ -282,7 +301,7 @@
               "MethodResponses": []
             },
             "DependsOn": [
-              "HelloLambdaPermissionApiGateway"
+              "ApiLambdaPermissionApiGateway"
             ]
           },
           "ApiGatewayMethodAny": {
@@ -319,7 +338,7 @@
                       ":lambda:path/2015-03-31/functions/",
                       {
                         "Fn::GetAtt": [
-                          "HelloLambdaFunction",
+                          "ApiLambdaFunction",
                           "Arn"
                         ]
                       },
@@ -331,10 +350,10 @@
               "MethodResponses": []
             },
             "DependsOn": [
-              "HelloLambdaPermissionApiGateway"
+              "ApiLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayDeployment1635563490934": {
+          "ApiGatewayDeployment1635648462240": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -347,12 +366,12 @@
               "ApiGatewayMethodAny"
             ]
           },
-          "HelloLambdaPermissionApiGateway": {
+          "ApiLambdaPermissionApiGateway": {
             "Type": "AWS::Lambda::Permission",
             "Properties": {
               "FunctionName": {
                 "Fn::GetAtt": [
-                  "HelloLambdaFunction",
+                  "ApiLambdaFunction",
                   "Arn"
                 ]
               },
@@ -391,16 +410,16 @@
               "Ref": "ServerlessDeploymentBucket"
             },
             "Export": {
-              "Name": "sls-DynamoProject-dev-ServerlessDeploymentBucketName"
+              "Name": "sls-my-test-dev-ServerlessDeploymentBucketName"
             }
           },
-          "HelloLambdaFunctionQualifiedArn": {
+          "ApiLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "HelloLambdaVersionEZSO8IjOCNmPoMB2iXHJukmFTNZGBUmKoqlcJrxHrI"
+              "Ref": "ApiLambdaVersionNkMX6sO2GMl7Tz9N14mvGqWPX703qvu7fsnXqrtQ"
             },
             "Export": {
-              "Name": "sls-DynamoProject-dev-HelloLambdaFunctionQualifiedArn"
+              "Name": "sls-my-test-dev-ApiLambdaFunctionQualifiedArn"
             }
           },
           "ServiceEndpoint": {
@@ -426,7 +445,7 @@
               ]
             },
             "Export": {
-              "Name": "sls-DynamoProject-dev-ServiceEndpoint"
+              "Name": "sls-my-test-dev-ServiceEndpoint"
             }
           }
         }
@@ -517,8 +536,8 @@
     },
     "pluginsData": {},
     "functions": {
-      "hello": {
-        "handler": "handler.hello",
+      "api": {
+        "handler": "handler.api",
         "events": [
           {
             "http": "ANY /{proxy+}"
@@ -527,19 +546,13 @@
             "http": "ANY /"
           }
         ],
-        "environment": {
-          "END_POINT": "http://dynamodb.us-east-1.amazonaws.com",
-          "REGION": "us-east-1",
-          "AWS_ACCESS_KEY_ENV": "AKIATEGZZ7VIFU7NH27A",
-          "SECRET_ACCESS_KEY": "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"
-        },
-        "name": "DynamoProject-dev-hello",
+        "name": "my-test-dev-api",
         "package": {},
         "memory": 2048,
         "timeout": 15,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "HelloLambdaVersionEZSO8IjOCNmPoMB2iXHJukmFTNZGBUmKoqlcJrxHrI"
+        "versionLogicalId": "ApiLambdaVersionNkMX6sO2GMl7Tz9N14mvGqWPX703qvu7fsnXqrtQ"
       }
     },
     "configValidationMode": "warn",
@@ -548,7 +561,6 @@
       "service": {
         "$ref": "$[\"service\"][\"serviceObject\"]"
       },
-      "frameworkVersion": "2",
       "provider": {
         "$ref": "$[\"service\"][\"provider\"]"
       },
@@ -558,10 +570,10 @@
     },
     "layers": {},
     "isDashboardMonitoringPreconfigured": false,
-    "artifact": "/home/reks/atriaWorkplace/testProjectNode/.serverless/DynamoProject.zip"
+    "artifact": "/home/reks/atriaWorkplace/testProjectNode/.serverless/my-test.zip"
   },
   "package": {
-    "artifactDirectoryName": "serverless/DynamoProject/dev/1635563499362-2021-10-30T03:11:39.362Z",
-    "artifact": "DynamoProject.zip"
+    "artifactDirectoryName": "serverless/my-test/dev/1635648471298-2021-10-31T02:47:51.298Z",
+    "artifact": "my-test.zip"
   }
 }
